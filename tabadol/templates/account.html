@@ -48,16 +48,10 @@
                         {% endfor %}
                     {% endif %}
                 </div>
-            </fieldset>
-                <!--Google map-->
-                <div id="map"></div>
-                <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
-                <script
-                  src="https://maps.googleapis.com/maps/api/js?key={{map_key}}&callback=initMap&libraries=&v=weekly"
-                  async></script>
                 <div class="form-group">
                 {{ form.submit(class="btn btn-outline-info") }}
-            </div>
+                </div>
+            </fieldset>
         </form>
     </div>
 {% endblock content %}
