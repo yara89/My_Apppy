@@ -78,3 +78,16 @@ a.article-title:hover {
 .account-heading {
   font-size: 2.5rem;
 }
+
+/* map css
+ Always set the map height explicitly
+ to define the size of the div element
+ that contains the map. */
+/* Set the size of the div element that contains the map */
+#map {
+  height: 500px;
+  /* The height is 400 pixels */
+  width: 500px;
+  /* The width is the width of the web page */
+}
+
