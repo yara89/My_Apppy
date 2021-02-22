@@ -18,8 +18,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 app.config['GOOGLEMAPS_KEY'] = os.environ.get('API_KEY')
 
 # app.config.from_object('tabadol.default_settings')
-# api_key = ' '  change this to your api key "AIzaSyBCnM5Y7jFzbc98onY43LS821QZ0_GMOMg"
-# GoogleMaps(app, key=api_key)  set api_key map_key=AIzaSyBCnM5Y7jFzbc98onY43LS821QZ0_GMOMg
+# api_key = ' '  change this to your api key ""
+# GoogleMaps(app, key=api_key)  set api_key 
 # devices_data = {}  dict to store data of devices
 # devices_location = {} # dict to store coordinates of devices
 # use sqlalchemy or something to store things in database
