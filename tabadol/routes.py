@@ -2,10 +2,12 @@ import os
 import secrets
 from PIL import Image
 from flask import render_template, url_for, flash, redirect, request, abort
-from tabadol import app, db, bcrypt
-from tabadol.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
+from tabadol import app, db, bcrypt, mail
+from tabadol.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, ResetPasswordForm
 from tabadol.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
+from flask_googlemaps import GoogleMaps, Map, icons
+from flask_mail import Message
 
 
 @app.route("/")
@@ -107,9 +109,9 @@ def new_post():
                     content=form.content.data, author=current_user)
         db.session.add(post)
         db.session.commit()
-        flash('Your post has been successfully created!', 'success')
+        flash('Your offer has been successfully created!', 'success')
         return redirect(url_for('home'))
-    return render_template('create_post.html', title='New Post', form=form, legend='New Post')
+    return render_template('create_post.html', title='New Offer', form=form, legend='New Post')
 
 
 @app.route("/post/<int:post_id>")
@@ -149,6 +151,8 @@ def delete_post(post_id):
     flash('Your post has been deleted!', 'success')
     return redirect(url_for('home'))
 
+# pagination
+
 
 @app.route("/user/<string:username>")
 def user_posts(username):
@@ -158,3 +162,64 @@ def user_posts(username):
         .order_by(Post.date_posted.desc())\
         .paginate(page=page, per_page=5)
     return render_template('user_posts.html', posts=posts, user=user)
+
+
+def send_reset_email(user):
+    token = user.get_reset_token()
+    msg = Message('Password Reset Request',
+                  sender='yara3001@gmail.com',
+                  recipients=[user.email])
+    msg.body = f'''To reset your password, visit the following link:
+{url_for('reset_token', token=token, _external=True)}
+If you did not make this request then simply ignore this email and no changes will be made.
+'''
+    mail.send(msg)
+
+
+@app.route("/reset_password", methods=['GET', 'POST'])
+def reset_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    form = RequestResetForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        send_reset_email(user)
+        flash('An email has been sent with instructions to reset your password.', 'info')
+        return redirect(url_for('login'))
+    return render_template('reset_request.html', title='Reset Password', form=form)
+
+
+@app.route("/reset_password/<token>", methods=['GET', 'POST'])
+def reset_token(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    user = User.verify_reset_token(token)
+    if user is None:
+        flash('That is an invalid or expired token', 'warning')
+        return redirect(url_for('reset_request'))
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(
+            form.password.data).decode('utf-8')
+        user.password = hashed_password
+        db.session.commit()
+        flash('Your password has been updated! You are now able to log in', 'success')
+        return redirect(url_for('login'))
+    return render_template('reset_token.html', title='Reset Password', form=form)
+
+
+@app.route("/maps", methods=['GET', 'POST'])
+def map_created_in_view():
+
+  #  gmap = Map(
+   #     identifier="gmap",
+  #      varname="gmap",
+   #     lat=37.4419,
+   #     lng=-122.1419,
+   #     markers=[{'lat': 52.4845, 'lng': 13.4344},
+   #              {'lat': 52.5042, 'lng': 13.4536},
+   #              {'lat': 52.5178, 'lng': 13.3810}],)
+
+    # icons.dots.green:   [(, ), (, )]
+    # icons.dots.blue: [(, , "Hello World")], add also...gmap=gmap
+    return render_template("maps.html",  title='Map of maps' )
