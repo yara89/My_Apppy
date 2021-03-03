@@ -5,7 +5,8 @@ from flask_login import LoginManager
 from flask_googlemaps import GoogleMaps, Map, icons
 from flask_mail import Mail
 from tabadol.config import Config
-from sqlalchemy import event
+from sqlalchemy import create_engine, event
+from sqlalchemy.event import listen
 
 
 db = SQLAlchemy()
@@ -17,15 +18,6 @@ login_manager.login_message_category = 'info'
 mail = Mail()
 
 GoogleMaps = GoogleMaps()
-
-
-@event.listens_for(db.engine, "connect")
-def load_spatialite(dbapi_conn, connection_record):
-    # From https://geoalchemy-2.readthedocs.io/en/latest/spatialite_tutorial.html
-    dbapi_conn.enable_load_extension(True)
-    # point to /usr/local/lib/mod_spatialite.dylib
-    dbapi_conn.load_extension('/usr/local/lib/mod_spatialite.dylib')
-    dbapi_conn.execute('SELECT InitSpatialMetaData()')
 
 
 def create_app(config_class=Config):
@@ -50,7 +42,20 @@ def create_app(config_class=Config):
     app.register_blueprint(errors)
 
     # db.drop_all(app=app)
-    db.engine.execute("SELECT InitSpatialMetaData();")
+    # db.engine.execute("SELECT InitSpatialMetaData();")
     db.create_all(app=app)
 
     return app
+
+#spatialite Tutorial connect to db...
+@event.listens_for(db.engine, "connect")
+def load_spatialite(dbapi_conn, connection_record):
+    # From https://geoalchemy-2.readthedocs.io/en/latest/spatialite_tutorial.html
+    dbapi_conn.enable_load_extension(True)
+    # point to /usr/local/lib/mod_spatialite.dylib
+    dbapi_conn.load_extension('/usr/local/lib/mod_spatialite.dylib')
+    dbapi_conn.execute('SELECT InitSpatialMetaData()')
+
+engine = create_engine('sqlite:///gis.db', echo=True)
+listen(engine, 'connect', load_spatialite)
+
