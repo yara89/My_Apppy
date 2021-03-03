@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, HiddenField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, HiddenField, IntegerField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from flask_login import current_user
 from tabadol.models import User
@@ -15,6 +15,18 @@ class RegistrationForm(FlaskForm):
                              validators=[DataRequired()])
     confirm_password = PasswordField('Confirm Password',
                                      validators=[DataRequired(), EqualTo('password')])
+    phone_number = IntegerField('Phone Number',
+                                validators=[
+                                    DataRequired()
+                                ])
+    twitter = StringField('Twitter',
+                          validators=[
+                              DataRequired(),
+                              Length(min=2, max=20)
+                          ])
+    facebook = StringField('Facebook',
+                           validators=[DataRequired(),
+                                       Length(min=2, max=20)])
     submit = SubmitField('Sign Up')
 
     def validate_username(self, username):
@@ -46,8 +58,10 @@ class UpdateAccountForm(FlaskForm):
                         validators=[DataRequired(), Email()])
     picture = FileField('Update Profile Picture', validators=[
                         FileAllowed(['jpg', 'png'])])
-    lng = HiddenField('lng')
-    lat = HiddenField('lat')
+    #lng = HiddenField('lng', validators=[DataRequired()])
+    # lat = HiddenField('lat', validators=[DataRequired()]))
+    # location = HiddenField('location', validators=[DataRequired()], length(min=2, max=200)))
+
     submit = SubmitField('Update Profle')
 
     def validate_username(self, username):
